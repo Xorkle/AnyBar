@@ -1,18 +1,8 @@
-# AnyBar: OS X menubar status indicator
+# AnyBar-icons: OS X menubar status indicator
 
-AnyBar is a small indicator for your menubar that does one simple thing: it displays a colored dot. What the dot means and when to change it is up to you.
+AnyBar-icons is a fork of [AnyBar](https://github.com/tonsky/AnyBar) which adds support for icons from [icons8.com](http://www.icons8.com). AnyBar-icons is a small indicator for your menu bar that displays a dot of specified color or any icon from icons8.com. What the dot or icon means and when to change it is up to you.
 
 <img src="screenshot.png?raw=true" />
-
-## Download
-
-Version 0.1.4:
-
-<a href="https://github.com/tonsky/AnyBar/releases/download/0.1.4/AnyBar-0.1.4.zip"><img src="AnyBar/Images.xcassets/AppIcon.appiconset/icon_128x128@2x.png?raw=true" style="width: 128px;" width=128/></a>
-
-Or using [Homebrew-cask](http://caskroom.io):
-
-    brew cask install anybar
 
 ## Usage
 
@@ -22,10 +12,15 @@ AnyBar is controlled via a UDP port (1738 by default). Before any commands can b
 open -a AnyBar
 ```
 
-Once launched, you may send it a message to change the style of the dot:
+Once launched, you may send it a message to change the color of the dot:
 
 ```sh
 echo -n "black" | nc -4u -w0 localhost 1738
+```
+
+Or set a custom icon from icons8.com by passing it's id:
+```sh
+echo -n "679" | nc -4u -w0 localhost 1738
 ```
 
 The following default commands change the style of the dot:
@@ -143,12 +138,11 @@ ANYBAR_PORT=1740 open -na AnyBar
 
 AnyBar can detect and use local custom images stored in the `~/.AnyBar` directory. For example, if you have a `~/.AnyBar/square@2x.png` image, send `square` to port 1738 and it will be displayed. Images should be 19×19 pixels for standard resolution, and 38x38 pixels for retina (@2x).
 
-## Ports
-
-- Ubuntu Unity [limpbrains/somebar](https://github.com/limpbrains/somebar)
-- i3wm with i3pystatus [enkore/i3pystatus](https://github.com/enkore/i3pystatus)
-
 ## Changelog
+
+### 0.1.5
+
+- Support for icons from [icons8.com](http://www.icons8.com)
 
 ### 0.1.4
 
