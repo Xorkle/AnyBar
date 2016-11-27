@@ -132,32 +132,45 @@
     return [NSString stringWithFormat:@"%@/%@/%@.png", NSHomeDirectory(), @".AnyBar", name];
 }
 
--(void)setImage:(NSString*) name {
-
-    NSImage *image = nil;
-    if (_dark)
-        image = [self tryImage:[self bundledImagePath:[name stringByAppendingString:@"_alt@2x"]]];
-    if (!image)
-        image = [self tryImage:[self bundledImagePath:[name stringByAppendingString:@"@2x"]]];
-    if (_dark && !image)
-        image = [self tryImage:[self homedirImagePath:[name stringByAppendingString:@"_alt"]]];
-    if (_dark && !image)
-        image = [self tryImage:[self homedirImagePath:[name stringByAppendingString:@"_alt@2x"]]];
-    if (!image)
-        image = [self tryImage:[self homedirImagePath:[name stringByAppendingString:@"@2x"]]];
-    if (!image)
-        image = [self tryImage:[self homedirImagePath:name]];
-    if (!image) {
-        if (_dark)
-            image = [self tryImage:[self bundledImagePath:@"question_alt@2x"]];
-        else
-            image = [self tryImage:[self bundledImagePath:@"question@2x"]];
-        NSLog(@"Cannot find image '%@'", name);
+-(void)setImage:(NSString*)imageId {
+    BOOL imageIdIsNumeric = [[NSScanner scannerWithString:imageId] scanInt:nil];
+    
+    if (imageIdIsNumeric) { // Numeric == icons8 icon id
+        [iconImage setSize:NSMakeSize(18, 18)];
+        _statusItem.image = iconImage;
+        _statusItem.alternateImage = iconImage;
+        
+        [_statusItem.image setTemplate:NO];
+        _imageName = imageId;
     }
-
-    _statusItem.image = image;
-    [_statusItem.image setTemplate:NO];
-    _imageName = name;
+    else {
+        NSString *colorName = imageId;
+        NSImage *image = nil;
+        if (_dark)
+        image = [self tryImage:[self bundledImagePath:[colorName stringByAppendingString:@"_alt@2x"]]];
+        if (!image)
+        image = [self tryImage:[self bundledImagePath:[colorName stringByAppendingString:@"@2x"]]];
+        if (_dark && !image)
+        image = [self tryImage:[self homedirImagePath:[colorName stringByAppendingString:@"_alt"]]];
+        if (_dark && !image)
+        image = [self tryImage:[self homedirImagePath:[colorName stringByAppendingString:@"_alt@2x"]]];
+        if (!image)
+        image = [self tryImage:[self homedirImagePath:[colorName stringByAppendingString:@"@2x"]]];
+        if (!image)
+        image = [self tryImage:[self homedirImagePath:colorName]];
+        if (!image) {
+            if (_dark)
+            image = [self tryImage:[self bundledImagePath:@"question_alt@2x"]];
+            else
+            image = [self tryImage:[self bundledImagePath:@"question@2x"]];
+            NSLog(@"Cannot find image '%@'", colorName);
+        }
+        
+        _statusItem.image = image;
+        _statusItem.alternateImage = [NSImage imageNamed:@"white_alt@2x.png"];
+        [_statusItem.image setTemplate:NO];
+        _imageName = colorName;
+    }
 }
 
 -(void)processUdpSocketMsg:(GCDAsyncUdpSocket *)sock withData:(NSData *)data
