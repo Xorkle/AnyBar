@@ -26,7 +26,7 @@
     _imageName = @"white";
     self.statusItem = [self initializeStatusBarItem];
     [self refreshDarkMode];
-
+    
     @try {
         _udpPort = [self getUdpPort];
         _udpSocket = [self initializeUdpSocket: _udpPort];
@@ -44,7 +44,7 @@
                                                            quitTitle: [NSValue valueWithPointer:@selector(terminate:)]
                                                            }];
     }
-
+    
     NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
     [center addObserver: self
                selector: @selector(refreshDarkMode)
@@ -55,30 +55,30 @@
 -(void)applicationWillTerminate:(NSNotification *)aNotification {
     [self shutdownUdpSocket: _udpSocket];
     _udpSocket = nil;
-
+    
     [[NSStatusBar systemStatusBar] removeStatusItem:_statusItem];
     _statusItem = nil;
 }
 
 -(int) getUdpPort {
     int port = [self readIntFromEnvironmentVariable:@"ANYBAR_PORT" usingDefault:@"1738"];
-
+    
     if (port < 0 || port > 65535) {
         @throw([NSException exceptionWithName:@"Argument Exception"
-                            reason:[NSString stringWithFormat:@"UDP Port range is invalid: %d", port]
-                            userInfo:@{@"argument": [NSNumber numberWithInt:port]}]);
-
+                                       reason:[NSString stringWithFormat:@"UDP Port range is invalid: %d", port]
+                                     userInfo:@{@"argument": [NSNumber numberWithInt:port]}]);
+        
     }
-
+    
     return port;
 }
 
 - (void)refreshDarkMode {
     NSString *osxMode = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"];
     if ([osxMode isEqualToString:@"Dark"])
-        self.dark = YES;
+    self.dark = YES;
     else
-        self.dark = NO;
+    self.dark = NO;
     [self setImage:_imageName];
 }
 
@@ -87,21 +87,21 @@
     GCDAsyncUdpSocket *udpSocket = [[GCDAsyncUdpSocket alloc]
                                     initWithDelegate:self
                                     delegateQueue:dispatch_get_main_queue()];
-
+    
     [udpSocket bindToPort:port error:&error];
     if (error) {
         @throw([NSException exceptionWithName:@"UDP Exception"
-                            reason:[NSString stringWithFormat:@"Binding to %d failed", port]
-                            userInfo:@{@"error": error}]);
+                                       reason:[NSString stringWithFormat:@"Binding to %d failed", port]
+                                     userInfo:@{@"error": error}]);
     }
-
+    
     [udpSocket beginReceiving:&error];
     if (error) {
         @throw([NSException exceptionWithName:@"UDP Exception"
-                            reason:[NSString stringWithFormat:@"Receiving from %d failed", port]
-                            userInfo:@{@"error": error}]);
+                                       reason:[NSString stringWithFormat:@"Receiving from %d failed", port]
+                                     userInfo:@{@"error": error}]);
     }
-
+    
     return udpSocket;
 }
 
@@ -112,16 +112,16 @@
 }
 
 -(void)udpSocket:(GCDAsyncUdpSocket *)sock didReceiveData:(NSData *)data
-      fromAddress:(NSData *)address withFilterContext:(id)filterContext {
+     fromAddress:(NSData *)address withFilterContext:(id)filterContext {
     [self processUdpSocketMsg:sock withData:data fromAddress:address];
 }
 
 -(NSImage*)tryImage:(NSString *)path {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:path])
-        return [[NSImage alloc] initWithContentsOfFile:path];
+    return [[NSImage alloc] initWithContentsOfFile:path];
     else
-        return nil;
+    return nil;
 }
 
 -(NSString*)bundledImagePath:(NSString *)name {
@@ -136,6 +136,8 @@
     BOOL imageIdIsNumeric = [[NSScanner scannerWithString:imageId] scanInt:nil];
     
     if (imageIdIsNumeric) { // Numeric == icons8 icon id
+        NSString *icons8URIString = [NSString stringWithFormat:@"https://api.icons8.com/api/iconsets/download?id=%@&format=png&size=36", imageId];
+        NSImage *iconImage = [[NSImage alloc] initWithContentsOfURL:[NSURL URLWithString:icons8URIString]]; //TODO: Asynchronous download and error handling
         [iconImage setSize:NSMakeSize(18, 18)];
         _statusItem.image = iconImage;
         _statusItem.alternateImage = iconImage;
@@ -174,13 +176,13 @@
 }
 
 -(void)processUdpSocketMsg:(GCDAsyncUdpSocket *)sock withData:(NSData *)data
-    fromAddress:(NSData *)address {
+               fromAddress:(NSData *)address {
     NSString *msg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-
+    
     if ([msg isEqualToString:@"quit"])
-        [[NSApplication sharedApplication] terminate:nil];
+    [[NSApplication sharedApplication] terminate:nil];
     else
-        [self setImage:msg];
+    [self setImage:msg];
 }
 
 -(NSStatusItem*) initializeStatusBarItem {
@@ -192,53 +194,53 @@
 
 -(NSMenu*) initializeStatusBarMenu:(NSDictionary*)menuDictionary {
     NSMenu *menu = [[NSMenu alloc] init];
-
+    
     [menuDictionary enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSValue* val, BOOL *stop) {
         SEL action = nil;
         [val getValue:&action];
         [menu addItemWithTitle:key action:action keyEquivalent:@""];
     }];
-
+    
     return menu;
 }
 
 -(int) readIntFromEnvironmentVariable:(NSString*) envVariable usingDefault:(NSString*) defStr {
     int intVal = -1;
-
+    
     NSString *envStr = [[[NSProcessInfo processInfo]
                          environment] objectForKey:envVariable];
     if (!envStr) {
         envStr = defStr;
     }
-
+    
     NSNumberFormatter *nFormatter = [[NSNumberFormatter alloc] init];
     nFormatter.numberStyle = NSNumberFormatterDecimalStyle;
     NSNumber *number = [nFormatter numberFromString:envStr];
-
+    
     if (!number) {
         @throw([NSException exceptionWithName:@"Argument Exception"
-                            reason:[NSString stringWithFormat:@"Parsing integer from %@ failed", envStr]
-                            userInfo:@{@"argument": envStr}]);
-
+                                       reason:[NSString stringWithFormat:@"Parsing integer from %@ failed", envStr]
+                                     userInfo:@{@"argument": envStr}]);
+        
     }
-
+    
     intVal = [number intValue];
-
+    
     return intVal;
 }
 
 -(id) osaImageBridge {
     NSLog(@"OSA Event: %@ - %@", NSStringFromSelector(_cmd), _imageName);
-
+    
     return _imageName;
 }
 
 
 -(void) setOsaImageBridge:(id)imgName {
     NSLog(@"OSA Event: %@ - %@", NSStringFromSelector(_cmd), imgName);
-
+    
     _imageName = (NSString *)imgName;
-
+    
     [self setImage:_imageName];
 }
 
