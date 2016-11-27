@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "ABAboutWindowController.h"
 
 @interface AppDelegate()
 
@@ -16,6 +17,7 @@
 @property (strong, nonatomic) NSString *imageName;
 @property (assign, nonatomic) BOOL dark;
 @property (assign, nonatomic) int udpPort;
+@property (strong, nonatomic) ABAboutWindowController *aboutWindowController;
 
 @end
 
@@ -38,9 +40,11 @@
     @finally {
         NSString *portTitle = [NSString stringWithFormat:@"UDP port: %@",
                                _udpPort >= 0 ? [NSNumber numberWithInt:_udpPort] : @"unavailable"];
+        NSString *aboutTitle = @"About";
         NSString *quitTitle = @"Quit";
         _statusItem.menu = [self initializeStatusBarMenu:@{
                                                            portTitle: [NSValue valueWithPointer:nil],
+                                                           aboutTitle: [NSValue valueWithPointer:@selector(showAboutWindow)],
                                                            quitTitle: [NSValue valueWithPointer:@selector(terminate:)]
                                                            }];
     }
@@ -227,6 +231,11 @@
     intVal = [number intValue];
     
     return intVal;
+}
+
+- (void)showAboutWindow {
+    _aboutWindowController = [[ABAboutWindowController alloc] initWithWindowNibName:@"About"];
+    [_aboutWindowController showWindow:nil];
 }
 
 -(id) osaImageBridge {
