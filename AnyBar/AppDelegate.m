@@ -146,11 +146,21 @@
 }
 
 -(void)setImage:(NSString*)imageId {
+    NSArray *idAndColor = [imageId componentsSeparatedByString:@"#"];
     BOOL imageIdIsNumeric = [[NSScanner scannerWithString:imageId] scanInt:nil];
-    
-    if (imageIdIsNumeric) { // Numeric == icons8 icon id
+    if ([idAndColor count] > 1) {
+       NSString *icons8URIString = [NSString stringWithFormat:@"https://api.icons8.com/api/iconsets/download?id=%@&format=png&size=36&color=%@", idAndColor[0], idAndColor[1]];
+        NSImage *iconImage = [[NSImage alloc] initWithContentsOfURL:[NSURL URLWithString:icons8URIString]];
+        [iconImage setSize:NSMakeSize(18, 18)];
+        _statusItem.image = iconImage;
+        _statusItem.alternateImage = iconImage;
+        
+        [_statusItem.image setTemplate:NO];
+        _imageName = imageId;
+        
+    } else if (imageIdIsNumeric) { // Numeric == icons8 icon id
         NSString *icons8URIString = [NSString stringWithFormat:@"https://api.icons8.com/api/iconsets/download?id=%@&format=png&size=36", imageId];
-        NSImage *iconImage = [[NSImage alloc] initWithContentsOfURL:[NSURL URLWithString:icons8URIString]]; //TODO: Asynchronous download and error handling
+        NSImage *iconImage = [[NSImage alloc] initWithContentsOfURL:[NSURL URLWithString:icons8URIString]];
         [iconImage setSize:NSMakeSize(18, 18)];
         _statusItem.image = iconImage;
         _statusItem.alternateImage = iconImage;
@@ -251,6 +261,7 @@
     }
     
     return envStr;
+}
 - (void)showAboutWindow {
     _aboutWindowController = [[ABAboutWindowController alloc] initWithWindowNibName:@"About"];
     [_aboutWindowController showWindow:nil];
